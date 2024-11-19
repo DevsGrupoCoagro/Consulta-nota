@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Consulta Nota🗒️</title>
+
+    <!-- Importação das bibliotecas diretamente do CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f4f6f9;
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .form-group {
+        margin-bottom: 15px; /* Ajuste do espaçamento entre os campos */
+      }
+      label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+      input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        background-color: #fff;
+      }
+      input[type="number"]:focus {
+        border-color: #007bff;
+        outline: none;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+      }
+      .button-container {
+        display: flex;
+        gap: 10px; /* Espaço entre os botões */
+        margin-bottom: 20px; /* Espaço abaixo da linha de botões */
+      }
+      button {
+        color: white;
+        padding: 12px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s;
+        display: flex;
+        align-items: center;
+      }
+      button i {
+        margin-right: 8px;
+      }
+      .btn-blue {
+        background-color: #007bff; /* Azul */
+      }
+      .btn-blue:hover {
+        background-color: #024894;
+      }
+      .btn-green {
+        background-color: #28a745; /* Verde */
+      }
+      .btn-green:hover {
+        background-color: #218838;
+      }
+      .btn-red {
+        background-color: #dc3545; /* Vermelho */
+      }
+      .btn-red:hover {
+        background-color: #c82333;
+      }
+      .btn-disabled {
+        background-color: #ccc; /* Cinza */
+        cursor: not-allowed; /* Muda o cursor para indicar que está desabilitado */
+      }
+      .error {
+        color: red;
+        margin-top: 10px;
+        font-size: 14px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      th,
+      td {
+        padding: 14px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+        font-size: 14px;
+      }
+      th {
+        background-color: #f7f7f7;
+        font-weight: bold;
+        color: #333;
+      }
+      tr:hover {
+        background-color: #f1f1f1;
+      }
+      tbody tr:nth-child(odd) {
+        background-color: #f9f9f9;
+      }
+      tbody tr:nth-child(even) {
+        background-color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Consulta Nota🗒️</h1>
+    <div>
+      <div class="form-group">
+        <label for="filialOrigem">Filial Origem</label>
+        <input
+          type="number"
+          id="filialOrigem"
+          placeholder="Digite a filial de origem"
+          title="Insira o código da filial de origem"
+        />
+      </div>
+      <div class="form-group">
+        <label for="filialDestino">Filial Destino</label>
+        <input
+          type="number"
+          id="filialDestino"
+          placeholder="Digite a filial de destino"
+          title="Insira o código da filial de destino"
+        />
+      </div>
+      <div class="form-group">
+        <label for="nNota">Número da Nota</label>
+        <input
+          type="number"
+          id="nNota"
+          placeholder="Digite o número da nota"
+          title="Insira o número da nota"
+        />
+      </div>
+      <div class="form-group">
+        <label for="filial">Filial</label>
+        <input
+          type="number"
+          id="filial"
+          placeholder="Digite o código da filial"
+          title="Insira o código da filial"
+        />
+      </div>
+      <div class="button-container">
+        <button class="btn-blue" onclick="executarConsulta()">
+          <i class="fas fa-search"></i>Executar Consulta
+        </button>
+        <button
+          class="btn-green btn-disabled"
+          id="btnBaixarCSV"
+          onclick="baixarCSV()"
+          disabled
+        >
+          <i class="fas fa-file-csv"></i>Baixar CSV
+        </button>
+        <button
+          class="btn-green btn-disabled"
+          id="btnBaixarXLSX"
+          onclick="baixarXLSX()"
+          disabled
+        >
+          <i class="fas fa-file-excel"></i>Baixar XLSX
+        </button>
+        <button class="btn-red" onclick="limparCampos()">
+          <i class="fas fa-trash-alt"></i>Limpar Dados
+        </button>
+      </div>
+      <p class="error" id="erro"></p>
+    </div>
+    <table id="resultados">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Filial Origem</th>
+          <th>Filial Destino</th>
+          <th>Produto</th>
+          <th>Quantidade</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script>
+      let dadosConsulta = [];
+
+      async function executarConsulta() {
+        const filialOrigem = document
+          .getElementById("filialOrigem")
+          .value.trim();
+        const filialDestino = document
+          .getElementById("filialDestino")
+          .value.trim();
+        const nNota = document.getElementById("nNota").value.trim();
+        const filial = document.getElementById("filial").value.trim();
+
+        // Validação: Verificar se os campos estão preenchidos e se são números
+        if (!filialOrigem || !filialDestino || !nNota || !filial) {
+          document.getElementById("erro").innerText =
+            "Preencha todos os campos.";
+          document.getElementById("filialOrigem").focus();
+          return;
+        }
+
+        if (
+          isNaN(filialOrigem) ||
+          isNaN(filialDestino) ||
+          isNaN(nNota) ||
+          isNaN(filial)
+        ) {
+          document.getElementById("erro").innerText =
+            "Os campos devem conter apenas números.";
+          document.getElementById("filialOrigem").focus();
+          return;
+        }
+
+        document.getElementById("erro").innerText = "";
+        const tableBody = document.querySelector("#resultados tbody");
+        tableBody.innerHTML = "";
+
+        try {
+          const resultados = await window.api.executarConsulta([
+            filialOrigem,
+            filialDestino,
+            nNota,
+            filial,
+          ]);
+
+          dadosConsulta = resultados; // Armazenar os dados para exportação
+
+          resultados.forEach((row, index) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${row.FILIAL_ORIGEM}</td>
+                        <td>${row.FILIAL_DESTINO}</td>
+                        <td>${row.PRODUTO}</td>
+                        <td>${row.QUANTIDADE}</td>
+                    `;
+            tableBody.appendChild(tr);
+          });
+
+          // Habilitar botões de download se houver resultados
+          if (resultados.length > 0) {
+            document.getElementById("btnBaixarCSV").disabled = false;
+            document.getElementById("btnBaixarXLSX").disabled = false;
+            document
+              .getElementById("btnBaixarCSV")
+              .classList.remove("btn-disabled");
+            document
+              .getElementById("btnBaixarXLSX")
+              .classList.remove("btn-disabled");
+          } else {
+            document.getElementById("erro").innerText =
+              "Nenhum dado encontrado.";
+            document.getElementById("filialOrigem").focus();
+          }
+        } catch (err) {
+          if (err.code === "ORA-01427") {
+            document.getElementById("erro").innerText =
+              "Erro: A consulta retornou mais de uma linha. Verifique os dados e tente novamente.";
+          } else {
+            document.getElementById("erro").innerText =
+              "Ocorreu um erro ao processar a consulta. Verifique os dados inseridos e tente novamente. Se o problema persistir, entre em contato com o suporte.";
+          }
+          document.getElementById("filialOrigem").focus();
+        }
+      }
+
+      function baixarCSV() {
+        if (dadosConsulta.length === 0) {
+          alert("Nenhum dado para exportar.");
+          return;
+        }
+        const table = document.querySelector("table");
+        const rows = Array.from(table.querySelectorAll("tr"));
+
+        const csvData = rows
+          .slice(1)
+          .map((row) => {
+            return Array.from(row.querySelectorAll("td"))
+              .slice(1)
+              .map((cell) => `"${cell.innerText.replace(/"/g, '""')}"`)
+              .join(",");
+          })
+          .join("\n");
+
+        const blob = new Blob([csvData], { type: "text/csv" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "dados_consulta.csv";
+        link.click();
+      }
+
+      function baixarXLSX() {
+        if (dadosConsulta.length === 0) {
+          alert("Nenhum dado para exportar.");
+          return;
+        }
+
+        const ws = XLSX.utils.json_to_sheet(dadosConsulta);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Resultados");
+        XLSX.writeFile(wb, "consulta_oracle.xlsx");
+      }
+
+      function limparCampos() {
+        document.getElementById("filialOrigem").value = "";
+        document.getElementById("filialDestino").value = "";
+        document.getElementById("nNota").value = "";
+        document.getElementById("filial").value = "";
+        document.getElementById("erro").innerText = ""; // Limpar mensagem de erro
+        const tableBody = document.querySelector("#resultados tbody");
+        tableBody.innerHTML = ""; // Limpar os dados da tabela
+        document.getElementById("btnBaixarCSV").disabled = true; // Desabilitar botão CSV
+        document.getElementById("btnBaixarXLSX").disabled = true; // Desabilitar botão XLSX
+        document.getElementById("btnBaixarCSV").classList.add("btn-disabled"); // Adicionar classe desabilitada
+        document.getElementById("btnBaixarXLSX").classList.add("btn-disabled"); // Adicionar classe desabilitada
+        document.getElementById("filialOrigem").focus(); // Focar no primeiro campo
+      }
+    </script>
+  </body>
+</html>

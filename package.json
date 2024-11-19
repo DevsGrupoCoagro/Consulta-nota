@@ -1,0 +1,45 @@
+{
+  "name": "nova-pasta",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Consulta nota",
+  "dependencies": {
+    "json2csv": "^6.0.0-alpha.2",
+    "nova-pasta": "file:",
+    "oracledb": "^6.7.0",
+    "papaparse": "^5.4.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.coagro.consultanota",
+    "productName": "Consulta Nota",
+    "icon": "icon.ico",
+    "files": [
+      "main.js",
+      "index.html",
+      "css/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}
