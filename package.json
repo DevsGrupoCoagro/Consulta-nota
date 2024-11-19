@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "Consulta nota",
   "dependencies": {
+    "exceljs": "^4.2.1",
     "json2csv": "^6.0.0-alpha.2",
     "nova-pasta": "file:",
     "oracledb": "^6.7.0",
@@ -28,6 +29,7 @@
     "files": [
       "main.js",
       "index.html",
+      "preload.js",
       "css/**/*",
       "node_modules/**/*",
       "package.json"

@@ -8,6 +8,7 @@
     <!-- Importação das bibliotecas diretamente do CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
@@ -294,23 +295,31 @@
           alert("Nenhum dado para exportar.");
           return;
         }
-        const table = document.querySelector("table");
-        const rows = Array.from(table.querySelectorAll("tr"));
+        // Obter o número da nota
+        const nNota = document.getElementById("nNota").value.trim();
 
-        const csvData = rows
-          .slice(1)
-          .map((row) => {
-            return Array.from(row.querySelectorAll("td"))
-              .slice(1)
-              .map((cell) => `"${cell.innerText.replace(/"/g, '""')}"`)
-              .join(",");
-          })
-          .join("\n");
+        // Criar o conteúdo do CSV
+        const csvData = dadosConsulta
+          .map(
+            (row) =>
+              [
+                row.FILIAL_ORIGEM,
+                row.FILIAL_DESTINO,
+                row.PRODUTO,
+                row.QUANTIDADE,
+              ].join(";") // Separar dados por ponto e vírgula
+          )
+          .join("\r\n"); // Adicionar quebra de linha no padrão MS-DOS
 
-        const blob = new Blob([csvData], { type: "text/csv" });
+        // Criar Blob com codificação Windows-1252 (ANSI)
+        const blob = new Blob([csvData], {
+          type: "text/csv;charset=windows-1252;",
+        });
+
+        // Criar link para download
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = "dados_consulta.csv";
+        link.download = `${nNota}.csv`;
         link.click();
       }
 
